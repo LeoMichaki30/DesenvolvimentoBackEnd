@@ -90,10 +90,46 @@ app.post("/categories", (req, res) => {
         id: randomUUID(),
         ...req.body,
     }
-    
+
     categories.push(category);
 
     res.status(201).json(category);
+});
+
+app.put("/categories/:id", (req, res) => {
+    const category = categories.find((category) => {
+        return category.id == req.params.id;
+    });
+
+    if (!category) {
+        return res.status(404).json({
+            message: "Categoria não encontrada."
+        });
+    }
+
+    category.name = req.body.name;
+    category.description = req.body.description;
+
+    res.status(200).json(category);
+});
+
+app.delete("/categories/:id", (req, res) => {
+    const category = categories.find((category) => {
+        return category.id == req.params.id;
+    });
+
+    if (!category) {
+        return res.status(404).json({
+            message: "Categoria não encontrada."
+        });
+    }
+
+    const index = categories.indexOf(category);
+    categories.splice(index, 1);
+
+    res.status(200).json({
+        message: "Categoria removida com sucesso.",
+    });
 });
 
 // =================
@@ -104,9 +140,64 @@ app.get("/products", (req, res) => {
 });
 
 app.post("/products", (req, res) => {
-    const product = req.body;
+    const product = {
+        id: randomUUID(),
+        ...req.body,
+    };
     products.push(product);
     res.status(201).json(product);
+});
+
+app.get("/products/:id", (req, res) => {
+    const product = products.find((product) => {
+        return product.id == req.params.id;
+    });
+
+    if (!product) {
+        return res.status(404).json({
+            message: "Produto não encontrado."
+        });
+    }
+
+    res.status(200).json(product);
+});
+
+app.put("/products/:id", (req, res) => {
+    const product = products.find((product) => {
+        return product.id == req.params.id;
+    });
+
+    if (!product) {
+        return res.status(404).json({
+            message: "Produto não encontrado."
+        });
+    }
+
+    product.categoryId = req.body.categoryId;
+    product.name = req.body.name;
+    product.description = req.body.description;
+    product.price = req.body.price;
+
+    res.status(200).json(product);
+});
+
+app.delete("/products/:id", (req, res) => {
+    const product = products.find((product) => {
+        return product.id == req.params.id;
+    });
+
+    if (!product) {
+        return res.status(404).json({
+            message: "Produto não encontrado."
+        });
+    }
+
+    const index = products.indexOf(product);
+    products.splice(index, 1);
+
+    res.status(200).json({
+        message: "Produto removido com sucesso."
+    });
 });
 
 export default app;
