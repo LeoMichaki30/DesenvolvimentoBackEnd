@@ -1,5 +1,6 @@
 import express from "express";
 import { randomUUID } from "node:crypto";
+import supabase from "./config/supabase.js";
 
 const app = express();
 
@@ -116,7 +117,7 @@ app.get("/produtos/:id", (req, res) => {
         })
     };
 
-  produto.categoriaId = req.body.categoriaId;
+  produto.category_id = req.body.categoriaId;
   produto.name = req.body.name;
   produto.description = req.body.description;
   produto.price = req.body.price;
@@ -130,7 +131,7 @@ app.delete("/produtos/:id", (req, res) => {
     }));
 
     if(!produto) {
-        res.status(404).json({
+      return res.status(404).json({
             message: "Não foi possível encontrar o produto."
         });
     }
@@ -142,6 +143,28 @@ const index = produtos.indexOf(produto);
       message: "produto removido com sucesso."
     });
 });
+
+app.get("/test-supabase", async (req, res) => {
+    const {data, error} = await supabase.
+    from("categories")
+    .select("*");
+    if (error) {
+      console.log("Erro ao consultar categorias supabase: ", error);
+
+      return res.status(500).json({
+      sucess: false,
+      message:"Erro ao consultar base de dados.",
+      error: error.message
+      });
+    }
+
+    res.status(200).json({
+      sucess: true,
+      message: "Conexão realizada com sucesso",
+    });
+  });
+
+
 
 
 
