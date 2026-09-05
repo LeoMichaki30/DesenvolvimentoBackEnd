@@ -1,174 +1,63 @@
 import express from "express";
-import { randomUUID } from "node:crypto";
-import supabase from "./config/supabase.js";
+import categort from "./models/Category.js";
+import Category from "./models/Category.js";
 
 const app = express();
 
-app.use(express.json());
+app.get("/categories", async (req, res) => {
+  try{
+    const categories = await Category.findAll()
+    res.status(200).json(categories);
+  }catch(error){
+    console.error("Erro ao buscar categorias:", error);
 
-const idCategoriasPizza = randomUUID();
-const idCategoriasBebidas = randomUUID();
-const idCategoriasEntradas = randomUUID();
-const idCategoriasSobremesas = randomUUID();
-
-const categorias = [
-    { id: idCategoriasEntradas, name: "Entradas", description: "Pratos leves para começar a refeição" },
-    { id: idCategoriasPizza, name: "Pratos Principais", description: "Pratos principais do cardápio" },
-    { id: idCategoriasSobremesas, name: "Sobremesas", description: "Doces e sobremesas para finalizar a refeição" },
-];
-
-const produtos = [
-    { id: randomUUID(), name: "Pizza Margherita", category_id: idCategoriasPizza, price: 45.90, description: "Molho de tomate, mussarela, manjericão fresco e azeite" },
-    { id: randomUUID(), name: "Pizza Calabresa", category_id: idCategoriasPizza, price: 48.90, description: "Molho de tomate, mussarela, calabresa fatiada e cebola" },
-    { id: randomUUID(), name: "Bruschetta", category_id: idCategoriasEntradas, price: 22.50, description: "Fatias de pão italiano tostado com tomate, alho e manjericão" },
-    { id: randomUUID(), name: "Tiramisù", category_id: idCategoriasSobremesas, price: 18.00, description: "Sobremesa italiana com café, mascarpone e cacau" },
-];
-
-app.get("/", (req, res) => {
-    res.status(200).json({
-        message: "Vamos vamos meu verdão vamos nao para de lutar",
-        version: "1.0.0",
-    });
-})
-
-/*
-CATEGORIAS
-*/
-
-app.get("/categorias", (req, res) => {
-    res.status(200).json(categorias);
+    res.status(500).json({
+      message: "erro ao buscar categorias"
+    })
+  }
 });
 
-app.post("/categorias", (req, res) => {
-    const categoria = {
-        id: randomUUID(),
-        ...req.body,
-    }
+app.post("/categories/:id", async (req, res) => {
+  try{
+    const category = await Category.create(req.body)
 
-    categorias.push(categoria);
+    res.status(200).json(category);
+  }catch(error){
+    console.error("Erro ao criar categoria:", error);
 
-    res.status(201).json(categoria);
-});
-
-
-app.put("/categorias/:id", (req, res) => {
-    const categoria = categorias.find((categoria => {
-        return categoria.id == req.params.id;
-    }));
-
-    if(!categoria) {
-        return res.status(404).json({
-            message: "Não foi possível encontrar a categoria."
-        });
-    }
-
-  categoria.name = req.body.name;
-  categoria.description = req.body.description;
-
-    res.status(200).json(categoria);
-});
-
-app.delete("/categorias/:id", (req, res) => {
-    const categoria = categorias.find((categoria => {
-        return categoria.id == req.params.id;
-    }));
-
-    if(!categoria) {
-        return res.status(404).json({
-            message: "Não foi possível encontrar a categoria."
-        });
-    }
-
-    const index = categorias.indexOf(categoria);
-    categorias.splice(index, 1)
-
-    res.status(200).json({
-      message: "Categoria removida com sucesso.",
-
-})
-});
-
-
-/*
-
-PRODUTOS
-
-*/
-
-app.get("/produtos", (req, res) => {
-    res.status(200).json(produtos)
-});
-
-app.post("/produtos", (req, res) => {
-    const produto = req.body;
-    produtos.push(produto);
-
-    res.status(201).json(produto);
-});
-
-app.get("/produtos/:id", (req, res) => {
-    const produto = produtos.find((produto => {
-        return produto.id == req.params.id;
-    }));
-
-    if(!produto) {
-        return res.status(404).json({
-            message: "Não foi possível encontrar o produto."
-        })
-    };
-
-  produto.category_id = req.body.categoriaId;
-  produto.name = req.body.name;
-  produto.description = req.body.description;
-  produto.price = req.body.price;
-
-    res.status(200).json(produto);
-});
-
-app.delete("/produtos/:id", (req, res) => {
-    const produto = produtos.find((produto => {
-        return produto.id == req.params.id;
-    }));
-
-    if(!produto) {
-      return res.status(404).json({
-            message: "Não foi possível encontrar o produto."
-        });
-    }
-
-const index = produtos.indexOf(produto);
-    produtos.splice(index, 1)
-
-    res.status(200).json({
-      message: "produto removido com sucesso."
+    res.status(500).json({
+      message: "erro ao criar categoria",
     });
+  }
 });
 
-app.get("/test-supabase", async (req, res) => {
-    const {data, error} = await supabase.
-    from("categories")
-    .select("*");
-    if (error) {
-      console.log("Erro ao consultar categorias supabase: ", error);
+app.get("/categories/:id", async (req, res) => {
+  try{
+    const category = await Category.findById(req.params.id)
 
-      return res.status(500).json({
-      sucess: false,
-      message:"Erro ao consultar base de dados.",
-      error: error.message
-      });
-    }
+    res.status(200).json(Category);
+  }catch(error){
+    console.error("Erro ao buscar categoria:", error);
 
-    res.status(200).json({
-      sucess: true,
-      message: "Conexão realizada com sucesso",
+    res.status(500).json({
+      message: "erro ao buscar categoria",
     });
-  });
+  }
+});
 
 
 
+app.get("/products", async (req, res) => {
+  try{
+    const categories = await Category.findAll()
+    res.status(200).json(categories);
+  }catch(error){
+    console.error("Erro ao buscar produtos:", error);
 
-
-
-  
+    res.status(500).json({
+      message: "erro ao buscar produtos."
+    })
+  }
+});
 
 export default app;
