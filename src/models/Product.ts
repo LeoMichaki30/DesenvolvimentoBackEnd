@@ -12,6 +12,8 @@ async function findAll() {
     return data;
 }
 
+
+
 export default {
     findAll,
 }
