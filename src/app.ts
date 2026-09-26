@@ -1,6 +1,7 @@
 import express from "express";
 import Category from "./models/Category.js";
 import Product from "./models/Product.js";
+import categoryRoutes from "./routes/categoryRoutes.js";
 
 const app = express();
 app.use(express.json());
@@ -18,96 +19,8 @@ app.get("/", (req, res) => {
 // =================
 // Categories
 // =================
-app.get("/categories", async (req, res) => {
-    try {
-        const categories = await Category.findAll();
+app.use("/categories", categoryRoutes);
 
-        res.status(200).json(categories);
-    } catch (error) {
-        console.error("Erro ao buscar categorias: ", error);
-
-        res.status(500).json({
-            message: "Erro ao buscar categorias.",
-        });
-    }
-});
-
-app.get("/categories/search/:keyword", async (req, res) => {
-    try {
-        const categories = await Category.searchByKeyword(
-            req.params.keyword
-        );
-
-        res.status(200).json(categories);
-    } catch (error) {
-        console.error("Erro ao pesquisar por categoria: ", error);
-
-        res.status(500).json({
-            message: "Erro ao pesquisar categoria.",
-        });
-    }
-});
-
-app.get("/categories/:id", async (req, res) => {
-    try {
-        const category = await Category.findById(req.params.id);
-
-        res.status(200).json(category);
-    } catch (error) {
-        console.error("Erro ao buscar categoria: ", error);
-
-        res.status(500).json({
-            message: "Erro ao buscar categoria.",
-        });
-    }
-});
-
-app.post("/categories", async (req, res) => {
-    try {
-        const category = await Category.create(req.body);
-
-        res.status(200).json(category);
-    } catch (error) {
-        console.error("Erro ao criar categoria: ", error);
-
-        res.status(500).json({
-            message: "Erro ao criar categoria.",
-        });
-    }
-});
-
-app.put("/categories/:id", async (req, res) => {
-    try {
-        const category = await Category.update(
-            req.params.id, 
-            req.body
-        );
-
-        res.status(200).json(category);
-    } catch (error) {
-        console.error("Erro ao alterar categoria: ", error);
-
-        res.status(500).json({
-            message: "Erro ao alterar categoria.",
-        });
-    }
-});
-
-app.delete("/categories/:id", async (req, res) => {
-    try {
-        await Category.remove(req.params.id);
-
-        res.status(200).json({
-            message: "Categoria removida com sucesso."
-        });
-    } catch (error) {
-        console.error("Erro ao remover categoria: ", error);
-
-        res.status(404).json({
-            message: "Categoria não encontrada.",
-        });
-    }
-});
 
 // =================
 // Products
