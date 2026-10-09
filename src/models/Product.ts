@@ -12,8 +12,82 @@ async function findAll() {
     return data;
 }
 
+async function findById(id: string) {
+    const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .eq("id", id)
+        .single();
 
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+async function create(product: Record<string, unknown>) {
+    const { data, error } = await supabase
+        .from("products")
+        .insert(product)
+        .select()
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+async function update(id: string, product: Record<string, unknown>) {
+    const { data, error } = await supabase
+        .from("products")
+        .update(product)
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+async function remove(id: string) {
+    const { data, error } = await supabase
+        .from("products")
+        .delete()
+        .eq("id", id)
+        .select()
+        .single();
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
+
+async function searchByKeyword(keyword: string) {
+    const { data, error } = await supabase
+        .from("products")
+        .select("*")
+        .or(`name.ilike.%${keyword}%, description.ilike.%${keyword}%`);
+
+    if (error) {
+        throw error;
+    }
+
+    return data;
+}
 
 export default {
     findAll,
-}
+    findById,
+    create,
+    update,
+    remove,
+    searchByKeyword,
+};
