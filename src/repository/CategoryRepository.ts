@@ -1,5 +1,6 @@
 import supabase from "../config/supabase.js";
 import { Category } from "../models/Category.js";
+import { NotFoundError } from "../erros/NotFoundError.js";
 
 async function findAll() {
     const { data, error } = await supabase
@@ -24,6 +25,10 @@ async function findById(id: string): Promise<Category> {
         throw error;
     }
 
+    if (!data) {
+        throw new NotFoundError("Categoria não encontrada.");
+    }
+
     return Category.restore(
         data.id,
         data.name,
@@ -45,7 +50,7 @@ async function create(category: Category) {
             active: category.isActive(),
         })
         .select()
-        .single();
+        .maybeSingle();
 
     if (error) {
         throw error;

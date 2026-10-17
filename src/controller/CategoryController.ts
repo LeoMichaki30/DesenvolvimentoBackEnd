@@ -1,6 +1,8 @@
 import type { Request, Response } from "express";
 import CategoryRepository from "../repository/CategoryRepository.js";
 import { Category } from "../models/Category.js";
+import { ValidationError } from "../erros/ValidationError.js";
+import { NotFoundError } from "../erros/NotFoundError.js";
 
 async function getAll(req: Request, res: Response) {
     try {
@@ -78,15 +80,21 @@ async function create(req: Request, res: Response) {
     } catch (error) {
         console.error("Erro ao criar categoria: ", error);
 
+        if (error instanceof ValidationError) {
+            return res.status(400).json({
+                message: error.message,
+            });
+        }
+
         res.status(500).json({
-            message: "Erro ao criar categoria.",
+            message: "Erro interno ao criar categoria.",
         });
     }
 }
 
 async function update(req: Request<{ id: string }>, res: Response) {
     const { id } = req.params;
-    const { name, display_order, description, icon } = req.body;
+    const { name, display_order, description, icon, active } = req.body;
 
     if (!id) {
         res.status(404).json({
@@ -97,15 +105,52 @@ async function update(req: Request<{ id: string }>, res: Response) {
     try {
         const category = await CategoryRepository.findById(id);
 
-        //criar validações...
+        //criar validações... 
+        if (name !== undefined) {
+        category.rename(name);
+        }
+        if (description !== undefined) {
+            category.changeDescription(description);
+        }
+        if (icon !== undefined) {
+            category.changeIcon(icon);
+        }
+        if (display_order !== undefined) {
+            category.changeDisplayOrder(display_order);
+        }
+        if (active !== undefined) {
+            if (active == true) {
+                category.activate();
+            } else {
+                category.deactivate();
+            }
+        }
+
         const updatedCategory = await CategoryRepository.update(category);
 
         res.status(200).json(updatedCategory);
     } catch (error) {
         console.error("Erro ao atualizar categoria: ", error);
 
+        if (error instanceof ValidationError) {
+            return res.status(400).json({
+                message: error.message,
+            });
+        }
+
+
+        if (error instanceof NotFoundError) {
+            res.status(404).json({
+                message: error.message,
+            }); 
+        }
+
+        res.status(404).json({
+            message: "Categoria não encontrada.",
+        });
+
         res.status(500).json({
-            message: "Erro ao atualizar categoria.",
+            message: "Erro interno ao atualizar categoria.",
         });
     }
 }
