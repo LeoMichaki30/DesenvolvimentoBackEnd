@@ -1,5 +1,5 @@
 import express from "express";
-import Product from "./models/Product.js";
+import productRoutes from "./routes/productRoutes.js";
 import categoryRoutes from "./routes/categoryRoutes.js";
 
 const app = express();
@@ -24,18 +24,9 @@ app.use("/categories", categoryRoutes);
 // =================
 // Products
 // =================
-app.get("/products", async (req, res) => {
-    try {
-        const products = await Product.findAll();
-
-        res.status(200).json(products);
-    } catch (error) {
-        console.error("Erro ao buscar produtos: ", error);
-
-        res.status(500).json({
-            message: "Erro ao buscar produtos.",
-        });
-    }
-});
+// =================
+// Products
+// =================
+app.use("/products", productRoutes);
 
 export default app;
