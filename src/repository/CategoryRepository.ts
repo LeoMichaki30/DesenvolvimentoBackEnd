@@ -1,6 +1,6 @@
 import supabase from "../config/supabase.js";
+import { NotFoundError } from "../errors/NotFoundError.js";
 import { Category } from "../models/Category.js";
-import { NotFoundError } from "../erros/NotFoundError.js";
 
 async function findAll() {
     const { data, error } = await supabase
@@ -25,7 +25,7 @@ async function findById(id: string): Promise<Category> {
         throw error;
     }
 
-    if (!data) {
+    if(!data) {
         throw new NotFoundError("Categoria não encontrada.");
     }
 
@@ -50,7 +50,7 @@ async function create(category: Category) {
             active: category.isActive(),
         })
         .select()
-        .maybeSingle();
+        .single();
 
     if (error) {
         throw error;
@@ -60,8 +60,12 @@ async function create(category: Category) {
 }
 
 async function update(category: Category) {
-    const id = category.getId();
-    
+    const id = category.getId();    
+
+    if (!id) {
+        throw new Error("Categoria sem ID não pode ser atualizada.")
+    }
+
     const { data, error } = await supabase
         .from("categories")
         .update({
@@ -91,6 +95,10 @@ async function remove(id: string) {
 
     if (error) {
         throw error;
+    }
+
+    if(!data) {
+        throw new NotFoundError("Categoria não encontrada.");
     }
 
     return data;

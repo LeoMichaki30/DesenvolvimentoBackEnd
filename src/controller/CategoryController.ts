@@ -1,8 +1,8 @@
 import type { Request, Response } from "express";
 import CategoryRepository from "../repository/CategoryRepository.js";
 import { Category } from "../models/Category.js";
-import { ValidationError } from "../erros/ValidationError.js";
-import { NotFoundError } from "../erros/NotFoundError.js";
+import { ValidationError } from "../errors/ValidationError.js";
+import { NotFoundError } from "../errors/NotFoundError.js";
 
 async function getAll(req: Request, res: Response) {
     try {
@@ -63,9 +63,11 @@ async function getById(req: Request<{ id: string }>, res: Response) {
     } catch (error) {
         console.error("Erro ao buscar categoria: ", error);
 
-        res.status(404).json({
-            message: "Categoria não encontrada.",
-        });
+        if(error instanceof NotFoundError){
+            res.status(404).json({
+                message: error.message
+            });
+        }
     }
 }
 
@@ -80,14 +82,14 @@ async function create(req: Request, res: Response) {
     } catch (error) {
         console.error("Erro ao criar categoria: ", error);
 
-        if (error instanceof ValidationError) {
+        if(error instanceof ValidationError) {
             return res.status(400).json({
-                message: error.message,
+                message: error.message
             });
         }
 
         res.status(500).json({
-            message: "Erro interno ao criar categoria.",
+            message: "Erro ao criar categoria.",
         });
     }
 }
@@ -105,25 +107,29 @@ async function update(req: Request<{ id: string }>, res: Response) {
     try {
         const category = await CategoryRepository.findById(id);
 
-        //criar validações... 
-        if (name !== undefined) {
-        category.rename(name);
+        //criar validações...
+        if(name != undefined) {
+            category.rename(name);
         }
-        if (description !== undefined) {
+
+        if(description != undefined) {
             category.changeDescription(description);
         }
-        if (icon !== undefined) {
-            category.changeIcon(icon);
-        }
-        if (display_order !== undefined) {
+
+        if(display_order != undefined) {
             category.changeDisplayOrder(display_order);
         }
-        if (active !== undefined) {
-            if (active == true) {
-                category.activate();
-            } else {
-                category.deactivate();
-            }
+
+        if(icon != undefined) {
+            category.changeIcon(icon);
+        }
+
+        if(active == true) {
+            category.activate;
+        }
+
+        if(active == false) {
+            category.deactivate;
         }
 
         const updatedCategory = await CategoryRepository.update(category);
@@ -132,22 +138,17 @@ async function update(req: Request<{ id: string }>, res: Response) {
     } catch (error) {
         console.error("Erro ao atualizar categoria: ", error);
 
-        if (error instanceof ValidationError) {
+        if(error instanceof ValidationError) {
             return res.status(400).json({
-                message: error.message,
+                message: error.message
             });
         }
 
-
-        if (error instanceof NotFoundError) {
+        if(error instanceof NotFoundError){
             res.status(404).json({
-                message: error.message,
-            }); 
+                message: error.message
+            });
         }
-
-        res.status(404).json({
-            message: "Categoria não encontrada.",
-        });
 
         res.status(500).json({
             message: "Erro interno ao atualizar categoria.",
@@ -173,8 +174,14 @@ async function remove(req: Request<{ id: string }>, res: Response) {
     } catch (error) {
         console.error("Erro ao remover categoria: ", error);
 
+        if(error instanceof NotFoundError){
+            res.status(404).json({
+                message: error.message
+            });
+        }
+
         res.status(500).json({
-            message: "Erro ao remover categoria.",
+            message: "Erro interno ao remover categoria.",
         });
     }
 }
